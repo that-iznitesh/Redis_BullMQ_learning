@@ -1,5 +1,20 @@
 import Product from "../models/Product.js";
 import  redisClient  from "../config/redis.js";
+import  productQueue  from "../queue/productQueue.js";
+
+// export const addProduct=async(req,res)=>{
+
+//     const product=await new Product({
+
+//         name:req.body.productName,
+//         price:req.body.productPrice
+
+//     });
+//     await product.save();
+//     await redisClient.del("products");
+//     res.json({success:true,product:product});
+
+// }
 
 export const addProduct=async(req,res)=>{
 
@@ -10,11 +25,32 @@ export const addProduct=async(req,res)=>{
 
     });
     await product.save();
-    await redisClient.del("products");
+
+    await productQueue.add(
+
+        "generateThumbnail",
+
+        {
+            id:product._id,
+
+            name:product.name
+
+        },
+        {
+            attempts:3,
+
+             backoff: {
+                 type: "fixed",
+                  delay: 5000
+                       }
+        }
+
+    );
+
     res.json({success:true,product:product});
 
 }
-
+  
 // export const getProducts=async(req,res)=>{
 
 //     const products=await Product.find();
@@ -44,6 +80,12 @@ export const getProducts=async(req,res)=>{
         "products",
 
         JSON.stringify(products)
+    //     ,
+    // {
+
+    //     EX:20      // auto delete after 20 seconds
+
+    // }
 
     );
 

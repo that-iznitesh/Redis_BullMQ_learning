@@ -2,6 +2,7 @@ import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import "./config/redis.js";
+import "./workers/productWorker.js";
 import productRoutes from "./routes/product.js";
 import cors from "cors";
 import morgan from "morgan";
